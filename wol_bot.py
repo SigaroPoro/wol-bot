@@ -1,6 +1,7 @@
 import os
 import asyncio
 import sys
+import socket
 import logging
 
 if sys.platform == "win32":
@@ -17,6 +18,7 @@ LOCAL_IP = "192.168.1.37"
 PUBLIC_IP = "88.20.72.39"
 WOL_PORT = 9
 PUBLIC_WOL_PORT = 43001
+STATUS_TCP_PORT = 43002
 
 logging.basicConfig(level=logging.INFO)
 
@@ -25,20 +27,15 @@ def get_wol_target():
         return PUBLIC_IP, PUBLIC_WOL_PORT
     return "255.255.255.255", WOL_PORT
 
-def get_ping_target():
-    if os.environ.get("CLOUD_MODE"):
-        return PUBLIC_IP
-    return LOCAL_IP
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
         await update.message.reply_text("No autorizado")
         return
-    mode = "☁ NUBE" if os.environ.get("CLOUD_MODE") else " LOCAL"
+    mode = " NUBE" if os.environ.get("CLOUD_MODE") else " LOCAL"
     await update.message.reply_text(
         f"Bot WOL activo [{mode}]\n"
         "/wake - Encender el PC\n"
-        "/status - Ver si el PC está encendido"
+        "/status - Ver si el PC esta encendido"
     )
 
 async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -57,20 +54,37 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No autorizado")
         return
     try:
-        target = get_ping_target()
-        response_time = ping(target, timeout=5)
-        if response_time:
-            await update.message.reply_text(f"PC ENCENDIDO ({response_time*1000:.0f}ms)")
+        if os.environ.get("CLOUD_MODE"):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
+            result = sock.connect_ex((PUBLIC_IP, STATUS_TCP_PORT))
+            sock.close()
+            if result == 0:
+                await update.message.reply_text("PC ENCENDIDO")
+            else:
+                await update.message.reply_text("PC APAGADO")
         else:
-            await update.message.reply_text("PC APAGADO")
+            response_time = ping(LOCAL_IP, timeout=5)
+            if response_time:
+                await update.message.reply_text(f"PC ENCENDIDO ({response_time*1000:.0f}ms)")
+            else:
+                await update.message.reply_text("PC APAGADO")
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
+
+async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.id != CHAT_ID:
+        await update.message.reply_text("No autorizado")
+        return
+    mode_str = "NUBE" if os.environ.get("CLOUD_MODE") else "LOCAL"
+    await update.message.reply_text(f"Modo: {mode_str}")
 
 def main():
     app = Application.builder().token(BOT_TOKEN).concurrent_updates(False).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("wake", wake))
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("mode", mode))
     logging.info("Bot iniciado")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
