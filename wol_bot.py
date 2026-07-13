@@ -2,6 +2,7 @@ import os
 import asyncio
 import sys
 import socket
+import time
 import logging
 
 if sys.platform == "win32":
@@ -19,8 +20,11 @@ PUBLIC_IP = "88.20.72.39"
 WOL_PORT = 9
 PUBLIC_WOL_PORT = 43001
 STATUS_TCP_PORT = 43002
+HEARTBEAT_TIMEOUT = 300
 
 logging.basicConfig(level=logging.INFO)
+
+last_online = 0
 
 def get_wol_target():
     if os.environ.get("CLOUD_MODE"):
@@ -49,20 +53,25 @@ async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
+async def online(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global last_online
+    if update.effective_chat.id != CHAT_ID:
+        await update.message.reply_text("No autorizado")
+        return
+    last_online = time.time()
+    await update.message.reply_text("OK")
+
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
         await update.message.reply_text("No autorizado")
         return
     try:
         if os.environ.get("CLOUD_MODE"):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(5)
-            result = sock.connect_ex((PUBLIC_IP, STATUS_TCP_PORT))
-            sock.close()
-            if result == 0:
+            global last_online
+            if time.time() - last_online < HEARTBEAT_TIMEOUT:
                 await update.message.reply_text("PC ENCENDIDO")
             else:
-                await update.message.reply_text("PC APAGADO")
+                await update.message.reply_text("PC APAGADO? (sin heartbeat)")
         else:
             response_time = ping(LOCAL_IP, timeout=5)
             if response_time:
@@ -83,6 +92,7 @@ def main():
     app = Application.builder().token(BOT_TOKEN).concurrent_updates(False).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("wake", wake))
+    app.add_handler(CommandHandler("online", online))
     app.add_handler(CommandHandler("status", status))
     app.add_handler(CommandHandler("mode", mode))
     logging.info("Bot iniciado")
