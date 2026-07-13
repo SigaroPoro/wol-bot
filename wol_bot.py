@@ -25,6 +25,11 @@ def get_wol_target():
         return PUBLIC_IP, PUBLIC_WOL_PORT
     return "255.255.255.255", WOL_PORT
 
+def get_ping_target():
+    if os.environ.get("CLOUD_MODE"):
+        return PUBLIC_IP
+    return LOCAL_IP
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
         await update.message.reply_text("No autorizado")
@@ -52,7 +57,8 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No autorizado")
         return
     try:
-        response_time = ping(LOCAL_IP, timeout=5)
+        target = get_ping_target()
+        response_time = ping(target, timeout=5)
         if response_time:
             await update.message.reply_text(f"PC ENCENDIDO ({response_time*1000:.0f}ms)")
         else:
