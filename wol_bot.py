@@ -8,7 +8,6 @@ import logging
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-from wakeonlan import wake
 from ping3 import ping
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -27,10 +26,13 @@ HEARTBEAT_LIMIT = 300
 logging.basicConfig(level=logging.INFO)
 
 def send_wol(mac, host, port):
-    try:
-        wake(mac, host=host, port=port)
-    except TypeError:
-        wake(mac, ip_address=host, port=port)
+    mac_clean = mac.replace("-", "").replace(":", "").replace(".", "")
+    mac_bytes = bytes.fromhex(mac_clean)
+    magic = b"\xff" * 6 + mac_bytes * 16
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.sendto(magic, (host, port))
+    sock.close()
 
 def save_heartbeat():
     try:
