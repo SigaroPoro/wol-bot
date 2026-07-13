@@ -1,0 +1,392 @@
+
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <script type="text/javascript" src="js/jquery.min.js?r=EN"></script>
+        <script type="text/javascript" src="js/jquery-migrate.min.js?r=EN"></script>
+        <script type="text/javascript" src="js/define.js?r=EN"></script>
+        <script type="text/javascript" src="js/tabs.js?r=EN"></script>
+        <script type="text/javascript" src="js/util_system.js?r=EN"></script>
+        <script type="text/javascript" src="js/util_string.js?r=EN"></script>
+        <script type="text/javascript" src="js/util_validate.js?r=EN"></script>
+        <script type="text/javascript" src="js/dhcp.js?r=EN"></script>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <meta http-equiv="Expires" content="-1">
+        <meta name='robots' content='noindex, nofollow'>
+        <title>LAN DHCP</title>
+        <link rel="stylesheet" type="text/css" href="css/base.css">
+        <link rel="stylesheet" type="text/css" href="css/table.css">
+        <link rel="stylesheet" type="text/css" href="css/functional.css">
+        <link rel="stylesheet" type="text/css" href="css/tabs.css">
+        <script language="javascript">
+        var sessionKey='292937675';
+        var tabs_no_reload_mask=0xff;
+        </script>
+    </head>
+    <body>
+        <h1>DHCP</h1>
+        <fieldset id="DHCPServerList" style="display:block;">
+            <legend>DHCP Server</legend>
+            <table class="tableH">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Index</th>
+                        <th>Order</th>
+                        <th>Opr.Status</th>
+                        <th>Adm.State</th>
+                        <th>Associated Interface</th>
+                        <th>Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--insert items by script-->
+                </tbody>
+            </table>
+            <span><button type="button" id="DelPool">Del</button><button type="button" id="AddPool">Add</button></span>
+        </fieldset>
+        <fieldset id="DHCPServerShow" style="display:none;">
+            <legend></legend>
+            <div class="tabs_group">
+                <ul class="tabs_control">
+                    <li><a href="#">DHCP Server Setting</a></li>
+                    <li><a href="#">Static Lease</a></li>
+                    <li><a href="#">Reserved IP</a></li>
+                    <li><a href="#">Options</a></li>
+                    <li><a href="#">Lease Information</a></li>
+                </ul>
+                <div class="tab_container">
+                    <div id="Tab1" class="tab_content">
+                        <form id="DHCPServerSettingForm">
+                        <div>
+                            <label class="labelL">Adm.State</label>
+                            <input type="radio" name="adm_state" value="1">Enable
+                            <input type="radio" name="adm_state" value="0">Disable
+                        </div>
+                        <div>
+                            <label class="labelL">Associated Interface</label>
+                            <select name="ip_intf_id" id="IPIntfId">
+                                <!--insert items by script-->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="labelL">Priority</label>
+                            <select name="order_p" id="order_p">
+                                <option value="1">Highest</option>
+                                <option value="2">Insert as Order</option>
+                                <option value="3">Lowest</option>
+                            </select>
+                            <input type="text" name="order" maxlength="5">
+                        </div>
+                        <div>
+                            <fieldset>
+                            <legend>Client Configuration</legend>
+<!-- CHT customization -->
+	                        <div>
+	                            <label class="labelL">Action</label>
+	                            <select name="dhcp_passthrough" id="dhcp_passthrough">
+	                                <option value="0">Assign Local IP</option>
+	                                <option value="1">Passthrough</option>
+	                            </select>
+	                        </div>
+<!-- CHT customization -->
+                            <div>
+                                <label class="labelL">IP Address Range</label>
+                                <input type="text" class="txtIP lSpace" name="ipv4_addr_min-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_min-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_min-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_min-3" value="0" maxlength="3"> <em>to</em>
+                                <input type="hidden" name="ipv4_addr_min">
+                                <input type="text" class="txtIP" name="ipv4_addr_max-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_max-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_max-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr_max-3" value="0" maxlength="3">
+                                <input type="hidden" name="ipv4_addr_max">
+                            </div>
+                            <div>
+                                <label class="labelL">Subnet Mask</label>
+                                <input type="text" class="txtIP lSpace" name="ipv4_mask-0" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_mask-1" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_mask-2" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_mask-3" value="0" maxlength="3">
+                                <input type="hidden" class="txtMASK0" name="ipv4_mask">
+                            </div>
+                            <div>
+                                <label class="labelL">Gateway</label>
+                                <input type="text" class="txtIP lSpace" name="ipv4_gw_addr-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_gw_addr-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_gw_addr-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_gw_addr-3" value="0" maxlength="3">
+                                <input type="hidden" name="ipv4_gw_addr">
+                            </div>
+                            <div>
+                                <label class="labelL">DNS</label>
+                                <input type="text" class="txtIP lSpace" name="ipv4_dns_addr_0-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_0-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_0-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_0-3" value="0" maxlength="3"> <em>and</em>
+                                <input type="hidden" name="ipv4_dns_addr_0">
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_1-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_1-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_1-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_dns_addr_1-3" value="0" maxlength="3">
+                                <input type="hidden" name="ipv4_dns_addr_1">
+                            </div>
+                            <div>
+                                <label class="labelL">Lease Time (seconds)</label>
+                                <input type="text" class="lSpace" name="lease_time" maxlength="10">
+                                <input type="checkbox" name="lease_time_u">Unlimited
+                            </div>
+                            </fieldset>
+                            <fieldset>
+                            <legend>Pool Condition</legend>
+                            <div>
+                                <input type="checkbox" name="dhcpv4_opt60">Vendor ID (Option 60 String)
+                                <input type="text" name="dhcpv4_opt60_value" maxlength="255">
+                            </div>
+                            <div>
+                                <span>Match Range</span>
+                                <input type="radio" name="dhcpv4_opt60_ex" value="0">Include
+                                <input type="radio" name="dhcpv4_opt60_ex" value="1">Exclude
+                            </div>
+                            <div>
+                                <span>Match Mode</span>
+                                <input type="radio" name="dhcpv4_opt60_matching_mode" value="0">Exact
+                                <input type="radio" name="dhcpv4_opt60_matching_mode" value="1">Prefix
+                                <input type="radio" name="dhcpv4_opt60_matching_mode" value="2">Suffix
+                                <input type="radio" name="dhcpv4_opt60_matching_mode" value="3">Substring
+                            </div>
+                            <div>
+                                <input type="checkbox" name="dhcpv4_opt61">Client ID (Option 61 HexBinary)
+                                <input type="text" name="dhcpv4_opt61_value" maxlength="765">
+                            </div>
+                            <div>
+                                <span>Match Range</span>
+                                <input type="radio" name="dhcpv4_opt61_ex" value="0">Include
+                                <input type="radio" name="dhcpv4_opt61_ex" value="1">Exclude
+                            </div>
+                            <div>
+                                <input type="checkbox" name="dhcpv4_opt77">User Class ID (Option 77 HexBinary)
+                                <input type="text" name="dhcpv4_opt77_value" maxlength="765">
+                            </div>
+                            <div>
+                                <span>Match Range</span>
+                                <input type="radio" name="dhcpv4_opt77_ex" value="0">Include
+                                <input type="radio" name="dhcpv4_opt77_ex" value="1">Exclude
+                            </div>
+                            <div>
+                                <input type="checkbox" name="mac_addr">MAC
+                            </div>
+                            <div>
+                                <label class="labelL">MAC Address</label>
+                                <input type="text" class="txtMAC lSpace" name="mac_addr_value-0" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_value-1" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_value-2" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_value-3" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_value-4" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_value-5" value="00" maxlength="2">
+                                <input type="hidden" name="mac_addr_value">
+                            </div>
+                            <div>
+                                <label class="labelL">MAC Mask</label>
+                                <input type="text" class="txtMAC lSpace" name="mac_addr_mask-0" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_mask-1" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_mask-2" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_mask-3" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_mask-4" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr_mask-5" value="00" maxlength="2">
+                                <input type="hidden" name="mac_addr_mask">
+                            </div>
+                            <div>
+                                <span>Match Range</span>
+                                <input type="radio" name="mac_addr_ex" value="0">Include
+                                <input type="radio" name="mac_addr_ex" value="1">Exclude
+                            </div>
+                            </fieldset>
+                        </div>
+                        <div>
+                            <input type="hidden" name="rtm_cfg_dhcpv4_svr_pool_id" value="-1">
+                            <input type="submit" value="Apply">
+                        </div>
+                        </form>
+                    </div>
+                    <div id="Tab2" class="tab_content">
+                        <div id="Tab2_1" class="showme">
+                            <table class="tableH">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Id</th>
+                                        <th>MAC Address</th>
+                                        <th>IP Address</th>
+                                        <th>Adm.State</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!--insert items by script-->
+                                </tbody>
+                            </table>
+                            <div>
+                                <button type="button" id="DelStatic">Del</button><button type="button" id="AddStatic">Add</button>
+                            </div>
+                        </div>
+                        <div id="Tab2_2" class="hideme" style="display:none;">
+                            <fieldset>
+                            <form id="AddStaticLeaseForm">
+                            <div>
+                                <label class="labelL">Adm.State</label>
+                                <input type="radio" name="adm_state" value="1">Enable
+                                <input type="radio" name="adm_state" value="0">Disable
+                            </div>
+                            <div>
+                                <label class="labelL">MAC Address</label>
+                                <input type="text" class="txtMAC lSpace" name="mac_addr-0" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr-1" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr-2" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr-3" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr-4" value="00" maxlength="2"> <em>:</em>
+                                <input type="text" class="txtMAC" name="mac_addr-5" value="00" maxlength="2">
+                                <input type="hidden" name="mac_addr">
+                            </div>
+                            <div>
+                                <label class="labelL">IP Address</label>
+                                <input type="text" class="txtIP lSpace" name="ipv4_addr-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="ipv4_addr-3" value="0" maxlength="3">
+                                <input type="hidden" name="ipv4_addr">
+                            </div>
+                            <div>
+                                <input type="hidden" name="rtm_dhcpv4_svr_pool_static_id" value="-1">
+                                <input type="hidden" name="rtm_cfg_dhcpv4_svr_pool_id" value="-1">
+                                <input type="submit" value="Apply">
+                            </div>
+                            </form>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div id="Tab3" class="tab_content">
+                        <div id="Tab3_1" class="showme">
+                            <table class="tableH">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Index</th>
+                                        <th>IP Address</th>
+                                        <th>IP Netmask</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!--insert items by script-->
+                                </tbody>
+                            </table>
+                            <div>
+                                <button type="button" id="DelReserve">Del</button><button type="button" id="AddReserve">Add</button>
+                            </div>
+                        </div>
+                        <div id="Tab3_2" class="hideme" style="display:none;">
+                            <fieldset>
+                            <form id="AddReserveIPForm">
+                            <div>
+                                <label class="labelL">IP Address</label>
+                                <input type="text" class="txtIP lSpace" name="reserved_ipv4_addr-0" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_addr-1" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_addr-2" value="0" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_addr-3" value="0" maxlength="3">
+                                <input type="hidden" name="reserved_ipv4_addr">
+                            </div>
+                            <div>
+                                <label class="labelL">IP Netmask</label>
+                                <input type="text" class="txtIP lSpace" name="reserved_ipv4_mask-0" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_mask-1" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_mask-2" value="255" maxlength="3"> <em>.</em>
+                                <input type="text" class="txtIP" name="reserved_ipv4_mask-3" value="0" maxlength="3">
+                                <input type="hidden" class="txtMASK2" name="reserved_ipv4_mask">
+                            </div>
+                            <div>
+                                <input type="hidden" name="rtm_cfg_dhcpv4_svr_pool_id" value="-1">
+                                <input type="submit" value="Apply">
+                            </div>
+                            </form>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div id="Tab4" class="tab_content">
+                        <div id="Tab4_1" class="showme">
+                            <table class="tableH">
+                                <thead>
+                                    <tr>
+                                        <th>Select</th>
+                                        <th>Id</th>
+                                        <th>Option</th>
+                                        <th>Length</th>
+                                        <th>HexBinary Value</th>
+                                        <th>Adm.State</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!--insert items by script-->
+                                </tbody>
+                            </table>
+                            <div>
+                                <button type="button" id="DelOption">Del</button><button type="button" id="AddOption">Add</button>
+                            </div>
+                        </div>
+                        <div id="Tab4_2" class="hideme" style="display:none;">
+                            <fieldset>
+                            <form id="AddOptionForm">
+                            <div>
+                                <label class="labelL">Adm.State</label>
+                                <input type="radio" name="adm_state" value="1">Enable
+                                <input type="radio" name="adm_state" value="0">Disable
+                            </div>
+                            <div>
+                                <label class="labelL">Option</label>
+                                <input type="text" class="lSpace" name="opt_code" maxlength="3">
+                            </div>
+                            <div>
+                                <label class="labelL">Length</label>
+                                <input type="text" class="lSpace" name="opt_len" maxlength="3">
+                            </div>
+                            <div>
+                                <label class="labelL">Value</label>
+                                <input type="text" name="opt_value" maxlength="765">
+                            </div>
+                            <p id="tef" class="note" style="display:none">
+                                Note: Option 0~223 accepts hexbinary string. Option 224~254 accepts ascii string.
+                            </p>
+                            <p id="std" class="note" style="display:none;">
+                                Note: All options accept hexbinary string only.
+                            </p>
+                            <div>
+                                <input type="hidden" name="rtm_dhcpv4_svr_pool_opt_id" value="-1">
+                                <input type="hidden" name="rtm_cfg_dhcpv4_svr_pool_id" value="-1">
+                                <input type="submit" value="Apply">
+                            </div>
+                            </form>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div id="Tab5" class="tab_content">
+                        <table class="tableH">
+                            <thead>
+                                <tr>
+                                    <th>MAC Address</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>Expires In</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--insert items by script-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </body>
+</html>

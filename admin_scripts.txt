@@ -1,0 +1,233 @@
+=== SCRIPT 0 (len=0) ===
+
+
+=== SCRIPT 1 (len=0) ===
+
+
+=== SCRIPT 2 (len=0) ===
+
+
+=== SCRIPT 3 (len=0) ===
+
+
+=== SCRIPT 4 (len=0) ===
+
+
+=== SCRIPT 5 (len=33055) ===
+
+
+    <!-- hide
+
+    var oldIE = (navigator.userAgent.indexOf("MSIE") != -1) && (document.documentMode <= 9);
+
+    var head = document.getElementsByTagName('head')[0];
+
+    var js = document.createElement("script");
+
+    js.type = "text/javascript";
+
+    if (!oldIE) {
+
+        js.src = '/js/sweetalert.min.js';
+
+        head.appendChild(js);
+
+    }
+
+
+
+    var ismobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    var sessionKey = '1661455406';
+
+    var curWebPage = '/te_wifi.asp';
+
+    var syncNvram = '0';
+
+    var unitNum = '0';
+
+    var wifiRefresh = '0';
+
+
+
+    var radio_adm_state = '1';
+var radio_opr_status = '1';
+var tef_assoc_state = '0';
+var tef_assoc_time_left = '0';
+var ssid_id = '0';
+var acc_pt_id = '0';
+var wifiSSIDName = htmlDecode('MOVISTAR-WIFI6-34B0');
+var uniqueSSID = '1';
+var wifiActive = '1';
+var wifiHideSSID = '0';
+var channel = '0';
+var wifiCurrentChannel = '6';
+var band = '1';
+var nbwcap = '1';
+var nctrlsb = '0';
+var phytype = '32';
+var wifiAuthMode = '34';
+var wpaPskKey = htmlDecode('p6u82AnunFaN2YoYiDQh');
+var keyIdx = '1';
+var keys = new Array( "1234567890123", "1234567890123", "1234567890123", "1234567890123" );
+var active = '0';
+
+
+    var wifiMacFlt = '';
+
+
+
+    var phy = parseInt(phytype);
+
+    var wifiPassword = '';
+
+    var MAX_MAC_FLT = 28;
+
+
+
+    if (wifiAuthMode == '02') {
+
+        wifiPassword = keys[keyIdx - 1];
+
+    } else {
+
+        wifiPassword = wpaPskKey;
+
+    }
+
+
+
+    if (wifiRefresh == '1') {
+
+        var code = 'location="/cgi-bin/te_wifirefresh.wl?wlRefresh=0"';
+
+        eval(code);
+
+    }
+
+
+
+    $(function() {
+
+        if (ismobile) {
+
+            $("#PCformat").remove();
+
+            showtable("ActiveMAC1");
+
+        } else {
+
+            $("#mobileformat").remove();
+
+            showtable("ActiveMAC");
+
+        }
+
+        $(".content,.Mcontent").after("<br>");
+
+        $('#mobileformat').find('input[type!=radio],select').parent().not('td,tr').css('text-align', 'center');
+
+        //include header
+
+        $('#includeHeader').load("te_header.asp");
+
+        $('[name=SSIDName],[name=SSIDName1]').val(wifiSSIDName);
+
+        $('[name=hideSSID][value=' + wifiHideSSID + '],[name=hideSSID1][value=' + wifiHideSSID + ']').click();
+
+        $('[name=uniqueSSID][value=' + uniqueSSID + '],[name=uniqueSSID1][value=' + uniqueSSID + ']').click();
+
+        $('[name=wifiActive][value=' + wifiActive + '],[name=wifiActive1][value=' + wifiActive + ']').click();
+
+        $('[name=AuthType]>option[value=' + wifiAuthMode + '],[name=AuthType1]>option[value=' + wifiAuthMode + ']').prop('selected', true);
+
+        if (wifiAuthMode == '00')
+
+            $('.pwdfield').hide();
+
+        else {
+
+            $('#SSIDPassword,#SSIDPassword1').val(wifiPassword);
+
+            var checkpass = checkPassLevel(wifiAuthMode, wifiPassword);
+
+            showPassLevel(checkpass);
+
+        }
+
+        loadChannelList();
+
+        $('[name=currentChannel],[name=currentChannel1]').html(wifiCurrentChannel);
+
+        if (active == '0')
+
+            $('.active').prop('src', 'te_off.png');
+
+        else if (active == '1')
+
+            $('.active').prop('src', 'te_on.png');
+
+
+
+        $('[name=SSIDName],[name=SSIDName1]').on('change keyup paste mouseup', function() {
+
+            var ssid = $('[name=SSIDName],[name=SSIDName1]').val();
+
+            if (getSSIDLength(ssid) > 32) {
+
+                alertSpecial("La longitud supera 32 bytes! SSID se trunca!");
+
+                while (getSSIDLength(ssid) > 32)
+
+                    ssid = ssid.substring(0, ssid.length - 1);
+
+                $('[name=SSIDName],[name=SSIDName1]').val(ssid);
+
+                $('[name=SSIDName],[name=SSIDName1]').select().focus();
+
+            }
+
+        });
+
+        $('#SSIDPassword,#SSIDPassword1').on('change keyup paste mouseup', function() {
+
+            var passlevel = checkPassLevel($('[name=AuthType],[name=AuthType1]').val(), $(this).val());
+
+            showPassLevel(passlevel);
+
+        });
+
+        $('[name=AuthType],[name=AuthType1]').change(function() {
+
+            if ($(this).val() == '00') {
+
+                $('.pwdfield').hide();
+
+            } else {
+
+                $('.pwdfield').show();
+
+                if ($(this).val() == '02') {
+
+                    alertSpecial('Recuerda que puedes introducir 13 caracteres en codificaci&oacute;n ASCII (letras, n&uacute;meros y caracteres especiales) o bien 26 caracteres en codificaci&oacute;n Hexadecimal (0-9 y A-F).');
+
+                    wifiPassword = keys[keyIdx - 1];
+
+                } else {
+
+                    wifiPassword = wpaPskKey;
+
+                }
+
+                $('#SSIDPassword,#SSIDPassword1').val(wifiPassword);
+
+                var passlevel = checkPassLevel($(this).val(), $('#SSIDPassword,#SSIDPassword1').val());
+
+                showPassLevel(passlevel);
+
+            }
+
+        });
+
+        var encodedSSID = wifiSSIDName.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/:/g, '\\:').re
+
