@@ -26,6 +26,12 @@ HEARTBEAT_LIMIT = 300
 
 logging.basicConfig(level=logging.INFO)
 
+def send_wol(mac, host, port):
+    try:
+        wake(mac, host=host, port=port)
+    except TypeError:
+        wake(mac, ip_address=host, port=port)
+
 def save_heartbeat():
     try:
         with open(HEARTBEAT_FILE, "w") as f:
@@ -62,7 +68,7 @@ async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     try:
         target, port = get_wol_target()
-        wake(MAC_ADDRESS, host=target, port=port)
+        send_wol(MAC_ADDRESS, target, port)
         await update.message.reply_text(f"Paquete enviado a {target}:{port}")
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
