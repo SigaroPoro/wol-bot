@@ -71,6 +71,10 @@ async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         target, port = get_wol_target()
         send_wol(MAC_ADDRESS, target, port)
+        await context.bot.send_message(
+            chat_id=CHAT_ID,
+            text="\U0001f680 WAKE"
+        )
         await update.message.reply_text(f"Paquete enviado a {target}:{port}")
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
