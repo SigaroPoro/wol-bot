@@ -1,11 +1,4 @@
-import os
-import asyncio
-import sys
-import socket
-import time
-import json
-import logging
-
+import os, asyncio, sys, socket, time, json, logging
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 from ping3 import ping
@@ -20,7 +13,6 @@ PUBLIC_IP = "88.20.72.39"
 WOL_PORT = 9
 PUBLIC_WOL_PORT = 43001
 STATUS_TCP_PORT = 43002
-HEARTBEAT_LIMIT = 300
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HEARTBEAT_FILE = os.path.join(BASE_DIR, "last_online.txt")
 STATE_FILE = os.path.join(BASE_DIR, "pc_state.txt")
@@ -48,7 +40,7 @@ def load_heartbeat():
         with open(HEARTBEAT_FILE, "r") as f:
             return float(f.read().strip())
     except:
-        return 0
+        return 0.0
 
 def save_state(state):
     try:
@@ -63,7 +55,7 @@ def load_state():
             parts = f.read().strip().split(":", 1)
             return parts[0], float(parts[1])
     except:
-        return "OFF", 0
+        return "OFF", 0.0
 
 def get_wol_target():
     if os.environ.get("CLOUD_MODE"):
@@ -72,104 +64,84 @@ def get_wol_target():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
-    mode = "NUBE" if os.environ.get("CLOUD_MODE") else "LOCAL"
+    m = "NUBE" if os.environ.get("CLOUD_MODE") else "LOCAL"
     await update.message.reply_text(
-        f"Bot WOL [{mode}]\n"
+        f"Bot WOL [{m}]\n"
         "/wake - Encender PC\n"
-        "/status - Estado del PC\n"
-        "/mode - Modo actual"
+        "/status - Estado del PC"
     )
 
 async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     try:
         target, port = get_wol_target()
         send_wol(MAC_ADDRESS, target, port)
+        save_heartbeat()
         save_state("ON")
-        await context.bot.send_message(
-            chat_id=CHAT_ID,
-            text="\U0001f680 WAKE"
-        )
+        await context.bot.send_message(chat_id=CHAT_ID, text="\U0001f680 WAKE")
         await update.message.reply_text(f"Paquete enviado a {target}:{port}")
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
-
-
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     try:
-        if os.environ.get("CLOUD_MODE"):
-            last_hb = load_heartbeat()
-            state, state_time = load_state()
-            now = time.time()
+        if not os.environ.get("CLOUD_MODE"):
+            r = ping(LOCAL_IP, timeout=5)
+            await update.message.reply_text(f"PC ENCENDIDO ({r*1000:.0f}ms)" if r else "PC APAGADO")
+            return
 
-            # If heartbeat received within last 2 minutes → ON
-            if now - last_hb < 120:
+        last_hb = load_heartbeat()
+        state, state_time = load_state()
+        now = time.time()
+        hb_age = now - last_hb
+
+        if hb_age < 120:
+            await update.message.reply_text("PC ENCENDIDO")
+            return
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)
+        try:
+            if sock.connect_ex((PUBLIC_IP, STATUS_TCP_PORT)) == 0:
                 await update.message.reply_text("PC ENCENDIDO")
                 return
+        finally:
+            sock.close()
 
-            # Try TCP connect as fallback
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(5)
-            try:
-                r = sock.connect_ex((PUBLIC_IP, STATUS_TCP_PORT))
-                if r == 0:
-                    await update.message.reply_text("PC ENCENDIDO")
-                    sock.close()
-                    return
-            finally:
-                sock.close()
-
-            # No heartbeat, no TCP → use last known state
-            if state == "ON" and now - state_time > 300:
-                await update.message.reply_text("PC APAGADO")
-            elif state == "SLEEP":
-                await update.message.reply_text("PC EN SUSPENSION")
-            elif state == "OFF":
-                await update.message.reply_text("PC APAGADO")
-            else:
-                await update.message.reply_text("PC APAGADO")
+        if state == "OFF":
+            await update.message.reply_text("PC APAGADO")
+        elif state == "SLEEP" or hb_age < 600:
+            await update.message.reply_text("PC EN SUSPENSION")
         else:
-            r = ping(LOCAL_IP, timeout=5)
-            if r:
-                await update.message.reply_text(f"PC ENCENDIDO ({r*1000:.0f}ms)")
-            else:
-                await update.message.reply_text("PC APAGADO")
+            await update.message.reply_text("PC APAGADO")
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
 async def online(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     save_heartbeat()
     save_state("ON")
     await update.message.reply_text("OK")
 
-async def sleep(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sleep_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     save_state("SLEEP")
     await update.message.reply_text("OK")
 
 async def offline(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     save_state("OFF")
     await update.message.reply_text("OK")
 
 async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.id != CHAT_ID:
-        await update.message.reply_text("No autorizado")
         return
     m = "NUBE" if os.environ.get("CLOUD_MODE") else "LOCAL"
     await update.message.reply_text(f"Modo: {m}")
@@ -179,7 +151,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("wake", wake))
     app.add_handler(CommandHandler("online", online))
-    app.add_handler(CommandHandler("sleep", sleep))
+    app.add_handler(CommandHandler("sleep", sleep_cmd))
     app.add_handler(CommandHandler("offline", offline))
     app.add_handler(CommandHandler("status", status))
     app.add_handler(CommandHandler("mode", mode))
