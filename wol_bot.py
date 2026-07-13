@@ -1,0 +1,72 @@
+import os
+import asyncio
+import sys
+import logging
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+from wakeonlan import wake
+from ping3 import ping
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+BOT_TOKEN = "8774485792:AAF9G8BIi47uXvuhtXxILUluGzQdd3-Cl8E"
+MAC_ADDRESS = "10-FF-E0-65-C8-4C"
+CHAT_ID = 7699121205
+LOCAL_IP = "192.168.1.37"
+PUBLIC_IP = "88.20.72.39"
+WOL_PORT = 9
+PUBLIC_WOL_PORT = 43001
+
+logging.basicConfig(level=logging.INFO)
+
+def get_wol_target():
+    if os.environ.get("CLOUD_MODE"):
+        return PUBLIC_IP, PUBLIC_WOL_PORT
+    return "255.255.255.255", WOL_PORT
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.id != CHAT_ID:
+        await update.message.reply_text("No autorizado")
+        return
+    mode = "☁ NUBE" if os.environ.get("CLOUD_MODE") else " LOCAL"
+    await update.message.reply_text(
+        f"Bot WOL activo [{mode}]\n"
+        "/wake - Encender el PC\n"
+        "/status - Ver si el PC está encendido"
+    )
+
+async def wake(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.id != CHAT_ID:
+        await update.message.reply_text("No autorizado")
+        return
+    try:
+        target, port = get_wol_target()
+        wake(MAC_ADDRESS, host=target, port=port)
+        await update.message.reply_text(f"Paquete enviado a {target}:{port}")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.id != CHAT_ID:
+        await update.message.reply_text("No autorizado")
+        return
+    try:
+        response_time = ping(LOCAL_IP, timeout=5)
+        if response_time:
+            await update.message.reply_text(f"PC ENCENDIDO ({response_time*1000:.0f}ms)")
+        else:
+            await update.message.reply_text("PC APAGADO")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+def main():
+    app = Application.builder().token(BOT_TOKEN).concurrent_updates(False).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("wake", wake))
+    app.add_handler(CommandHandler("status", status))
+    logging.info("Bot iniciado")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
+
+if __name__ == "__main__":
+    main()
